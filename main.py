@@ -4,8 +4,11 @@ from pydantic import BaseModel
 from typing import Optional
 from random import randrange
 
+
+
 #create instance of FastAPI named app
 app = FastAPI()
+
 
 class Post(BaseModel):
     title: str
@@ -25,13 +28,14 @@ def root():
 def get_posts():
     return {"data": my_posts}
 
-@app.post("/posts")
+@app.post("/posts", status_code = status.HTTP_201_CREATED)
 def create_posts(new_post: Post):
     post_dict = new_post.dict()
     #add random id for testing purposes
     post_dict["id"] = randrange(0, 1000000)
     my_posts.append(post_dict)
     return {"data": post_dict}
+
 
 @app.get("/posts/{id}")
 def get_post(id: int, response: Response):
