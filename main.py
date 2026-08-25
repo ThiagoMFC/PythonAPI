@@ -11,17 +11,21 @@ class Post(BaseModel):
     content: str
     published: Optional[bool] = True
 
+#hardcode some posts for testing purposes
+my_posts = [{"title": "title of post 1", "content": "content of post 1", "published": True, "id": 1},
+             {"title": "title of post 2", "content": "content of post 2", "published": True, "id": 2}]
+
 #define a path GET operation (route/endpoint) decorator
 @app.get("/")
 def root():
-    return{"message": "hello"}
+    return {"message": "hello"}
 
 @app.get("/posts")
 def get_posts():
-    return{"data": "posts will go here"}
+    return {"data": my_posts}
 
-@app.post("/createposts")
+@app.post("/posts")
 def create_posts(new_post: Post):
-    return{"data": new_post.dict()}
+    return {"data": new_post.dict()}
 
 
