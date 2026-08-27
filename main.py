@@ -55,6 +55,16 @@ def delete_post(id: int):
     #when no post is found
     raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
                         detail= f"Post id {id} doesn't exist")
+
+@app.put("/posts/{id}")
+def update_post(post: Post, id: int):
+    for i, p in enumerate(my_posts):
+            if p['id'] == id:
+                my_posts[i] = post.dict()
+                return {"message" : "post updated"}
+    #when no post is found
+    raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
+                        detail= f"Post id {id} doesn't exist")
            
 
 
