@@ -3,17 +3,38 @@ from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
 from random import randrange
-
-
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import time
+import os
+from dotenv import load_dotenv
 
 #create instance of FastAPI named app
 app = FastAPI()
 
+# Load the variables from the .env file
+load_dotenv()
 
 class Post(BaseModel):
     title: str
     content: str
     published: Optional[bool] = True
+
+#try connecting to DB every 5 seconds until succeeds
+while True:
+    try:
+        conn = psycopg2.connect(host = os.getenv('DB_HOST'), 
+                                database=os.getenv('DB_NAME'), 
+                                user=os.getenv('DB_USER'), 
+                                password=os.getenv('DB_USER_PWD'), 
+                                cursor_factory=RealDictCursor)
+        cursor = conn.cursor()
+        print ("DB connection successful")
+        break
+    except Exception as error:
+        print("DB connection failed")
+        print("Error: ", error)
+        time.sleep(5)
 
 #hardcode some posts for testing purposes
 my_posts = [{"title": "title of post 1", "content": "content of post 1", "published": True, "id": 1},
