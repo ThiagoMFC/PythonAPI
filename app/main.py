@@ -47,15 +47,21 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"data": my_posts}
+    cursor.execute(""" SELECT * FROM posts """)
+    posts = cursor.fetchall()
+    return {"data": posts}
 
 @app.post("/posts", status_code = status.HTTP_201_CREATED)
 def create_posts(new_post: Post):
-    post_dict = new_post.dict()
-    #add random id for testing purposes
-    post_dict["id"] = randrange(0, 1000000)
-    my_posts.append(post_dict)
-    return {"data": post_dict}
+    # %s sanitizes variable to avoid sql injection
+    cursor.execute(""" INSERT INTO posts (title, content, published) 
+        VALUES (%s, %s, %s) RETURNING * """, 
+        (new_post.title, new_post.content, new_post.published))
+
+    new_p = cursor.fetchone()
+    #commit changes in DB
+    conn.commit()
+    return {"data": new_p}
 
 
 @app.get("/posts/{id}")
