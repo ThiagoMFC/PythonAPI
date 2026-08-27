@@ -66,7 +66,6 @@ def create_posts(new_post: Post):
 
 @app.get("/posts/{id}")
 def get_post(id: int):
-
     cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id)))
     post = cursor.fetchone()
     if not post:
@@ -76,15 +75,17 @@ def get_post(id: int):
 
 @app.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
-    #deleting from dict for testing purposes
-    for i, post in enumerate(my_posts):
-        if post['id'] == id:
-            my_posts.pop(i)
-            return Response(status_code=status.HTTP_204_NO_CONTENT)
-    #when no post is found
-    raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
-                        detail= f"Post id {id} doesn't exist")
+    cursor.execute(""" UPDATE posts SET published = 'False' 
+                    WHERE id = %s RETURNING *""",
+                   (str(id)))
+    post = cursor.fetchone()
+    conn.commit()
+    if not post:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
+                                detail= f"Post id {id} doesn't exist")
 
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    
 @app.put("/posts/{id}")
 def update_post(post: Post, id: int):
     for i, p in enumerate(my_posts):
