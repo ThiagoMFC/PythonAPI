@@ -60,7 +60,9 @@ def delete_post(id: int):
 def update_post(post: Post, id: int):
     for i, p in enumerate(my_posts):
             if p['id'] == id:
-                my_posts[i] = post.dict()
+                post_dict = post.dict()
+                post_dict['id'] = id
+                my_posts[i] = post_dict
                 return {"message" : "post updated"}
     #when no post is found
     raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
