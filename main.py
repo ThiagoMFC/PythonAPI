@@ -45,4 +45,16 @@ def get_post(id: int, response: Response):
                             detail = f"post id {id} was not found")
     return {"data": post} 
 
+@app.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
+def delete_post(id: int):
+    #deleting from dict for testing purposes
+    for i, post in enumerate(my_posts):
+        if post['id'] == id:
+            my_posts.pop(i)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
+    #when no post is found
+    raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
+                        detail= f"Post id {id} doesn't exist")
+           
+
 
