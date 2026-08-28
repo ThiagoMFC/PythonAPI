@@ -41,24 +41,18 @@ while True:
         print("Error: ", error)
         time.sleep(5)
 
-#hardcode some posts for testing purposes
-my_posts = [{"title": "title of post 1", "content": "content of post  1",
-            "published": True, "id": 1}, 
-            {"title": "title of post 2", "content": "content of post 2", "published": True, "id": 2}]
 
 #define a path GET operation (route/endpoint) decorator
 @app.get("/")
 def root():
     return {"message": "hello"}
 
-@app.get("/sqlalchemy")
-def test_posts(db: Session = Depends(get_db)):
-    return {"message" : "success"}
 
 @app.get("/posts")
-def get_posts():
-    cursor.execute(""" SELECT * FROM posts WHERE published = True""")
-    posts = cursor.fetchall()
+def get_posts(db: Session = Depends(get_db)):
+    #cursor.execute(""" SELECT * FROM posts WHERE published = True""")
+    #posts = cursor.fetchall()
+    posts = db.query(models.Post).where(models.Post.published == True).all()
     return {"data": posts}
 
 @app.post("/posts", status_code = status.HTTP_201_CREATED)
