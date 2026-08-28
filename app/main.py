@@ -47,7 +47,7 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    cursor.execute(""" SELECT * FROM posts """)
+    cursor.execute(""" SELECT * FROM posts WHERE published = True""")
     posts = cursor.fetchall()
     return {"data": posts}
 
@@ -66,7 +66,7 @@ def create_posts(new_post: Post):
 
 @app.get("/posts/{id}")
 def get_post(id: int):
-    cursor.execute(""" SELECT * FROM posts WHERE id = %s """, (str(id)))
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s AND published = True """, (str(id)))
     post = cursor.fetchone()
     if not post:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
