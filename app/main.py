@@ -37,8 +37,9 @@ while True:
         time.sleep(5)
 
 #hardcode some posts for testing purposes
-my_posts = [{"title": "title of post 1", "content": "content of post 1", "published": True, "id": 1},
-             {"title": "title of post 2", "content": "content of post 2", "published": True, "id": 2}]
+my_posts = [{"title": "title of post 1", "content": "content of post  1",
+            "published": True, "id": 1}, 
+            {"title": "title of post 2", "content": "content of post 2", "published": True, "id": 2}]
 
 #define a path GET operation (route/endpoint) decorator
 @app.get("/")
@@ -66,7 +67,8 @@ def create_posts(new_post: Post):
 
 @app.get("/posts/{id}")
 def get_post(id: int):
-    cursor.execute(""" SELECT * FROM posts WHERE id = %s AND published = True """, (str(id)))
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s AND published =
+            True """, (str(id)))
     post = cursor.fetchone()
     if not post:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
@@ -76,7 +78,7 @@ def get_post(id: int):
 @app.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
     cursor.execute(""" UPDATE posts SET published = 'False' 
-                    WHERE id = %s RETURNING *""",
+                    WHERE id = %s AND published = True RETURNING *""",
                    (str(id)))
     post = cursor.fetchone()
     conn.commit()
@@ -88,15 +90,15 @@ def delete_post(id: int):
     
 @app.put("/posts/{id}")
 def update_post(post: Post, id: int):
-    for i, p in enumerate(my_posts):
-            if p['id'] == id:
-                post_dict = post.dict()
-                post_dict['id'] = id
-                my_posts[i] = post_dict
-                return {"message" : "post updated"}
-    #when no post is found
-    raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
-                        detail= f"Post id {id} doesn't exist")
+    cursor.execute(""" UPDATE posts SET title = %s, content = %s 
+                        WHERE id = %s AND published = True RETURNING *""",
+                       (post.title, post.content, str(id)))
+    post_updated = cursor.fetchone()
+    conn.commit()
+    if not post_updated:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
+                                detail= f"Post id {id} doesn't exist")
+    return {"data" : post_updated}
            
 
 
