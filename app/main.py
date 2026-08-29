@@ -56,15 +56,24 @@ def get_posts(db: Session = Depends(get_db)):
     return {"data": posts}
 
 @app.post("/posts", status_code = status.HTTP_201_CREATED)
-def create_posts(new_post: Post):
+def create_posts(new_post: Post, db: Session = Depends(get_db)):
     # %s sanitizes variable to avoid sql injection
-    cursor.execute(""" INSERT INTO posts (title, content, published) 
-        VALUES (%s, %s, %s) RETURNING * """, 
-        (new_post.title, new_post.content, new_post.published))
-
-    new_p = cursor.fetchone()
+    #cursor.execute(""" INSERT INTO posts (title, content, published) 
+    #    VALUES (%s, %s, %s) RETURNING * """, 
+    #    (new_post.title, new_post.content, new_post.published))
+    #new_p = cursor.fetchone()
     #commit changes in DB
-    conn.commit()
+    #conn.commit()
+
+
+    #  Using ORM sqlalchemy / unpack new_post dict into correct format
+    new_p = models.Post(**new_post.model_dump())
+    # Add to db
+    db.add(new_p)
+    # Aommit changes
+    db.commit()
+    # Retrieve data from db (Returning *)
+    db.refresh(new_p)
     return {"data": new_p}
 
 
