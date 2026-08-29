@@ -91,29 +91,45 @@ def get_post(id: int, db: Session = Depends(get_db)):
     return {"data": post} 
 
 @app.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
-def delete_post(id: int):
-    cursor.execute(""" UPDATE posts SET published = 'False' 
-                    WHERE id = %s AND published = True RETURNING *""",
-                   (str(id)))
-    post = cursor.fetchone()
-    conn.commit()
+def delete_post(id: int, db: Session = Depends(get_db)):
+    #cursor.execute(""" UPDATE posts SET published = 'False' 
+    #                WHERE id = %s AND published = True RETURNING *""",
+    #               (str(id)))
+    #post = cursor.fetchone()
+    #conn.commit()
+
+    post_query = db.query(models.Post).where(models.Post.id == id)
+    post = post_query.first()
+
     if not post:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
                                 detail= f"Post id {id} doesn't exist")
 
+    post_query.update({'published': False}, synchronize_session=False)
+    db.commit()
+
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
 @app.put("/posts/{id}")
-def update_post(post: Post, id: int):
-    cursor.execute(""" UPDATE posts SET title = %s, content = %s 
-                        WHERE id = %s AND published = True RETURNING *""",
-                       (post.title, post.content, str(id)))
-    post_updated = cursor.fetchone()
-    conn.commit()
-    if not post_updated:
+def update_post(post: Post, id: int, db: Session = Depends(get_db)):
+    #cursor.execute(""" UPDATE posts SET title = %s, content = %s 
+    #                    WHERE id = %s AND published = True RETURNING *""",
+    #                   (post.title, post.content, str(id)))
+    #post_updated = cursor.fetchone()
+    #conn.commit()
+
+    post_query = db.query(models.Post).where(models.Post.id == id)
+    post_to_update = post_query.first()
+
+    if not post_to_update:
         raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
                                 detail= f"Post id {id} doesn't exist")
-    return {"data" : post_updated}
+
+    post_query.update(post.model_dump(), synchronize_session=False)
+    db.commit()
+    db.refresh(post_to_update)
+    
+    return {"data" : post_to_update}
            
 
 
