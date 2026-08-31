@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 #define what the request shuould look like
@@ -17,4 +17,4 @@ class PostResponse(PostBase):
     id: int
     created_at: datetime
     #ignore reposponse is not a dict and convert sqlalchemy model to pydantic model
-    class Config: orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
