@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends
+'''
 from fastapi.params import Body
 from pydantic import BaseModel
 from typing import Optional
@@ -6,8 +7,9 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
 import os
-from dotenv import load_dotenv
-from . import models 
+'''
+#from dotenv import load_dotenv
+from . import models, schemas 
 from .database import engine, get_db
 from sqlalchemy.orm import Session
 
@@ -15,16 +17,11 @@ from sqlalchemy.orm import Session
 app = FastAPI()
 
 # Load the variables from the .env file
-load_dotenv()
+#load_dotenv()
 
 models.Base.metadata.create_all(bind=engine)
 
-
-class Post(BaseModel):
-    title: str
-    content: str
-    published: Optional[bool] = True
-
+'''
 #try connecting to DB every 5 seconds until succeeds
 while True:
     try:
@@ -40,7 +37,7 @@ while True:
         print("DB connection failed")
         print("Error: ", error)
         time.sleep(5)
-
+'''
 
 #define a path GET operation (route/endpoint) decorator
 @app.get("/")
@@ -50,21 +47,24 @@ def root():
 
 @app.get("/posts")
 def get_posts(db: Session = Depends(get_db)):
-    #cursor.execute(""" SELECT * FROM posts WHERE published = True""")
-    #posts = cursor.fetchall()
+    '''
+    cursor.execute(""" SELECT * FROM posts WHERE published = True""")
+    posts = cursor.fetchall()
+    '''
     posts = db.query(models.Post).where(models.Post.published == True).all()
     return {"data": posts}
 
 @app.post("/posts", status_code = status.HTTP_201_CREATED)
-def create_posts(new_post: Post, db: Session = Depends(get_db)):
+def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
+    '''
     # %s sanitizes variable to avoid sql injection
-    #cursor.execute(""" INSERT INTO posts (title, content, published) 
-    #    VALUES (%s, %s, %s) RETURNING * """, 
-    #    (new_post.title, new_post.content, new_post.published))
-    #new_p = cursor.fetchone()
+    cursor.execute(""" INSERT INTO posts (title, content, published) 
+        VALUES (%s, %s, %s) RETURNING * """, 
+       (new_post.title, new_post.content, new_post.published))
+    new_p = cursor.fetchone()
     #commit changes in DB
-    #conn.commit()
-
+    conn.commit()
+    '''
 
     #  Using ORM sqlalchemy / unpack new_post dict into correct format
     new_p = models.Post(**new_post.model_dump())
@@ -79,9 +79,11 @@ def create_posts(new_post: Post, db: Session = Depends(get_db)):
 
 @app.get("/posts/{id}")
 def get_post(id: int, db: Session = Depends(get_db)):
-    #cursor.execute(""" SELECT * FROM posts WHERE id = %s AND published =
-    #        True """, (str(id)))
-    #post = cursor.fetchone()
+    '''
+    cursor.execute(""" SELECT * FROM posts WHERE id = %s AND published =
+            True """, (str(id)))
+    post = cursor.fetchone()
+    '''
 
     post = db.query(models.Post).where(models.Post.id == id).first()
 
@@ -92,11 +94,13 @@ def get_post(id: int, db: Session = Depends(get_db)):
 
 @app.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
-    #cursor.execute(""" UPDATE posts SET published = 'False' 
-    #                WHERE id = %s AND published = True RETURNING *""",
-    #               (str(id)))
-    #post = cursor.fetchone()
-    #conn.commit()
+    '''
+    cursor.execute(""" UPDATE posts SET published = 'False' 
+                    WHERE id = %s AND published = True RETURNING *""",
+                   (str(id)))
+    post = cursor.fetchone()
+    conn.commit()
+    '''
 
     post_query = db.query(models.Post).where(models.Post.id == id)
     post = post_query.first()
@@ -111,12 +115,14 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
 @app.put("/posts/{id}")
-def update_post(post: Post, id: int, db: Session = Depends(get_db)):
-    #cursor.execute(""" UPDATE posts SET title = %s, content = %s 
-    #                    WHERE id = %s AND published = True RETURNING *""",
-    #                   (post.title, post.content, str(id)))
-    #post_updated = cursor.fetchone()
-    #conn.commit()
+def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)):
+    '''
+    cursor.execute(""" UPDATE posts SET title = %s, content = %s 
+                        WHERE id = %s AND published = True RETURNING *""",
+                       (post.title, post.content, str(id)))
+    post_updated = cursor.fetchone()
+    conn.commit()
+    '''
 
     post_query = db.query(models.Post).where(models.Post.id == id)
     post_to_update = post_query.first()
