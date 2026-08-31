@@ -17,13 +17,13 @@ def root():
     return {"message": "hello"}
 
 
-@app.get("/posts")
-def get_posts(db: Session = Depends(get_db), response_model=schemas.PostResponse):
+@app.get("/posts", response_model=List[schemas.PostResponse])
+def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).where(models.Post.published == True).all()
     return posts
 
 @app.post("/posts", status_code = status.HTTP_201_CREATED, 
-          response_model=List[schemas.PostResponse])
+          response_model=schemas.PostResponse)
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
     #Using ORM sqlalchemy / unpack new_post dict into correct format
     new_p = models.Post(**new_post.model_dump())
@@ -36,8 +36,8 @@ def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
     return  new_p
 
 
-@app.get("/posts/{id}")
-def get_post(id: int, db: Session = Depends(get_db), response_model=schemas.PostResponse):
+@app.get("/posts/{id}", response_model=schemas.PostResponse)
+def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).where(models.Post.id == id).first()
 
     if not post:
@@ -59,9 +59,8 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
-@app.put("/posts/{id}")
-def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db),
-                response_model=schemas.PostResponse):
+@app.put("/posts/{id}", response_model=schemas.PostResponse)
+def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post_to_update = post_query.first()
 
@@ -84,3 +83,13 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     return new_user
+
+@app.get("/users/{id}", response_model=schemas.UserResponse)
+def get_user(id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).where(models.User.id == id).first()
+
+    if not user:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, 
+                                        detail= f"User with id {id} not found")
+
+    return user
