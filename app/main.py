@@ -2,6 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException, Depends
 from . import models, schemas 
 from .database import engine, get_db
 from sqlalchemy.orm import Session
+from typing import List
 
 #create instance of FastAPI named app
 app = FastAPI()
@@ -15,11 +16,12 @@ def root():
 
 
 @app.get("/posts")
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), response_model=schemas.PostResponse):
     posts = db.query(models.Post).where(models.Post.published == True).all()
     return posts
 
-@app.post("/posts", status_code = status.HTTP_201_CREATED)
+@app.post("/posts", status_code = status.HTTP_201_CREATED, 
+          response_model=List[schemas.PostResponse])
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
     #  Using ORM sqlalchemy / unpack new_post dict into correct format
     new_p = models.Post(**new_post.model_dump())
@@ -33,7 +35,7 @@ def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/posts/{id}")
-def get_post(id: int, db: Session = Depends(get_db)):
+def get_post(id: int, db: Session = Depends(get_db), response_model=schemas.PostResponse):
     post = db.query(models.Post).where(models.Post.id == id).first()
 
     if not post:
@@ -56,7 +58,8 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
 @app.put("/posts/{id}")
-def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)):
+def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db),
+                response_model=schemas.PostResponse):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post_to_update = post_query.first()
 
