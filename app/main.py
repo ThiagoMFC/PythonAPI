@@ -23,13 +23,13 @@ def get_posts(db: Session = Depends(get_db), response_model=schemas.PostResponse
 @app.post("/posts", status_code = status.HTTP_201_CREATED, 
           response_model=List[schemas.PostResponse])
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
-    #  Using ORM sqlalchemy / unpack new_post dict into correct format
+    #Using ORM sqlalchemy / unpack new_post dict into correct format
     new_p = models.Post(**new_post.model_dump())
     # Add to db
     db.add(new_p)
-    # Aommit changes
+    #Commit changes
     db.commit()
-    # Retrieve data from db (Returning *)
+    #Retrieve data from db (Returning *)
     db.refresh(new_p)
     return  new_p
 
@@ -70,8 +70,13 @@ def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)
     post_query.update(post.model_dump(), synchronize_session=False)
     db.commit()
     db.refresh(post_to_update)
-    
     return post_to_update
            
-
-
+@app.post("/users", status_code=status.HTTP_201_CREATED, 
+          response_model=schemas.UserResponse)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    new_user = models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user

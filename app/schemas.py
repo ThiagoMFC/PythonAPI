@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr
 from datetime import datetime
 
 #define what the request shuould look like
@@ -18,3 +18,14 @@ class PostResponse(PostBase):
     created_at: datetime
     #ignore reposponse is not a dict and convert sqlalchemy model to pydantic model
     model_config = ConfigDict(from_attributes=True)
+
+#define what create user request should look like
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    model_config = ConfigDict(from_attributes=True)
+
