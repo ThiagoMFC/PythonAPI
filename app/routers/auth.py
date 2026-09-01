@@ -5,7 +5,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 router = APIRouter()
 
-@router.post("/login")
+@router.post("/login", response_model=schemas.Token)
 def login(user_creds: OAuth2PasswordRequestForm = Depends(), 
           db: Session = Depends(database.get_db)):
     #No email field on password request form. username field instead

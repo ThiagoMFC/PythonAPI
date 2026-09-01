@@ -1,5 +1,5 @@
 from fastapi import Response, status, HTTPException, Depends, APIRouter
-from .. import models, schemas 
+from .. import models, schemas, oauth2 
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
@@ -7,13 +7,14 @@ from typing import List
 router = APIRouter(prefix="/posts")
 
 @router.get("/", response_model=List[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db)):
+def get_posts(db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     posts = db.query(models.Post).where(models.Post.published == True).all()
     return posts
 
 @router.post("/", status_code = status.HTTP_201_CREATED, 
           response_model=schemas.PostResponse)
-def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
+def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
+
     #Using ORM sqlalchemy / unpack new_post dict into correct format
     new_p = models.Post(**new_post.model_dump())
     # Add to db
@@ -35,7 +36,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
     return post
 
 @router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)
-def delete_post(id: int, db: Session = Depends(get_db)):
+def delete_post(id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post = post_query.first()
 
@@ -49,7 +50,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
 @router.put("/{id}", response_model=schemas.PostResponse)
-def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)):
+def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db), user_id: int = Depends(oauth2.get_current_user)):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post_to_update = post_query.first()
 
