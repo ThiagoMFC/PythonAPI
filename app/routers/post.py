@@ -4,14 +4,14 @@ from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
 
-router = APIRouter()
+router = APIRouter(prefix="/posts")
 
-@router.get("/posts", response_model=List[schemas.PostResponse])
+@router.get("/", response_model=List[schemas.PostResponse])
 def get_posts(db: Session = Depends(get_db)):
     posts = db.query(models.Post).where(models.Post.published == True).all()
     return posts
 
-@router.post("/posts", status_code = status.HTTP_201_CREATED, 
+@router.post("/", status_code = status.HTTP_201_CREATED, 
           response_model=schemas.PostResponse)
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
     #Using ORM sqlalchemy / unpack new_post dict into correct format
@@ -25,7 +25,7 @@ def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db)):
     return  new_p
 
 
-@router.get("/posts/{id}", response_model=schemas.PostResponse)
+@router.get("/{id}", response_model=schemas.PostResponse)
 def get_post(id: int, db: Session = Depends(get_db)):
     post = db.query(models.Post).where(models.Post.id == id).first()
 
@@ -34,7 +34,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
                             detail = f"post id {id} was not found")
     return post
 
-@router.delete("/posts/{id}", status_code = status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code = status.HTTP_204_NO_CONTENT)
 def delete_post(id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post = post_query.first()
@@ -48,7 +48,7 @@ def delete_post(id: int, db: Session = Depends(get_db)):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
     
-@router.put("/posts/{id}", response_model=schemas.PostResponse)
+@router.put("/{id}", response_model=schemas.PostResponse)
 def update_post(post: schemas.PostCreate, id: int, db: Session = Depends(get_db)):
     post_query = db.query(models.Post).where(models.Post.id == id)
     post_to_update = post_query.first()
