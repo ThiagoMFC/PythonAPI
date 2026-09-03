@@ -17,6 +17,7 @@ class PostResponse(PostBase):
     #inherits title, title, published from PostBase
     id: int
     created_at: datetime
+    owner_id: int
     #ignore reposponse is not a dict and convert sqlalchemy model to pydantic model
     model_config = ConfigDict(from_attributes=True)
 

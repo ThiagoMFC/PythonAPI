@@ -16,7 +16,7 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
     #Using ORM sqlalchemy / unpack new_post dict into correct format
-    new_p = models.Post(**new_post.model_dump())
+    new_p = models.Post(owner_id = current_user.id, **new_post.model_dump())
     # Add to db
     db.add(new_p)
     #Commit changes
