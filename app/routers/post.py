@@ -9,8 +9,8 @@ router = APIRouter(prefix="/posts")
 #################################### GET ALL POSTS ##########################
 
 @router.get("/", response_model=List[schemas.PostResponse])
-def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    posts = db.query(models.Post).where(models.Post.published == True).all()
+def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0):
+    posts = db.query(models.Post).where(models.Post.published == True).limit(limit).offset(skip).all()
     return posts
 
 ################################ CREATE POST #############################
