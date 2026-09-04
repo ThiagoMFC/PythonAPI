@@ -15,8 +15,7 @@ def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.
 
 ################################ CREATE POST #############################
 
-@router.post("/", status_code = status.HTTP_201_CREATED, 
-          response_model=schemas.PostResponse)
+@router.post("/", status_code = status.HTTP_201_CREATED, response_model=schemas.PostResponse)
 def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
 
     #Using ORM sqlalchemy / unpack new_post dict into correct format
