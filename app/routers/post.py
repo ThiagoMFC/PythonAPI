@@ -33,9 +33,10 @@ def create_posts(new_post: schemas.PostCreate, db: Session = Depends(get_db), cu
 
 ################################ GET POST BY ID ############################
 
-@router.get("/{id}", response_model=schemas.PostResponse)
+@router.get("/{id}", response_model=schemas.PostVoteResponse)
 def get_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(models.Post).where(models.Post.id == id).first()
+    #post = db.query(models.Post).where(models.Post.id == id).first()
+    post = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).where(models.Post.id == id, models.Post.published == True).first()
 
     if not post:
         raise HTTPException(status_code = status.HTTP_404_NOT_FOUND,
