@@ -22,6 +22,10 @@ class PostResponse(PostBase):
     #ignore reposponse is not a dict and convert sqlalchemy model to pydantic model
     model_config = ConfigDict(from_attributes=True)
 
+class PostVoteResponse(BaseModel):
+    Post: PostResponse
+    votes: int
+
 #define what create user request should look like
 class UserCreate(BaseModel):
     email: EmailStr

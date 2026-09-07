@@ -3,14 +3,17 @@ from .. import models, schemas, oauth2
 from ..database import get_db
 from sqlalchemy.orm import Session
 from typing import List
+from sqlalchemy import func
 
 router = APIRouter(prefix="/posts")
 
 #################################### GET ALL POSTS ##########################
 
-@router.get("/", response_model=List[schemas.PostResponse])
+@router.get("/", response_model=List[schemas.PostVoteResponse])
 def get_posts(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int = 10, skip: int = 0):
-    posts = db.query(models.Post).where(models.Post.published == True).limit(limit).offset(skip).all()
+    #posts = db.query(models.Post).where(models.Post.published == True).limit(limit).offset(skip).all()
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label("votes")).join(models.Vote, models.Vote.post_id == models.Post.id, isouter=True).group_by(models.Post.id).where(models.Post.published == True).limit(limit).offset(skip).all()
+    #print(posts_p)
     return posts
 
 ################################ CREATE POST #############################
