@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from datetime import datetime
 from typing import Optional
 
@@ -43,3 +43,12 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+class Vote(BaseModel):
+    post_id: int
+    direction: int = Field(ge=0, le=1) #restrict inputs to 0 (remove like) or 1 (add like)
+
+class VoteResponse(BaseModel):
+    post_id: int
+    
+
