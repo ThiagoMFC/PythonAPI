@@ -17,7 +17,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 
 
-@pytest.fixture
+@pytest.fixture()
 def session():
     #drop test db before tests
     Base.metadata.drop_all(bind=engine)
@@ -29,7 +29,7 @@ def session():
     finally:
         db.close()
 
-@pytest.fixture
+@pytest.fixture()
 def client(session):
     def override_get_db():
         try:
