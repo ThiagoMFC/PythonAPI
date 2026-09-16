@@ -1,0 +1,13 @@
+from fastapi.testclient import TestClient
+from app.main import app
+
+
+client = TestClient(app)
+
+def test_create_user():
+    res = client.post("/users/", json={
+        "email": "email123@email.com",
+        "password": "pass123"
+    })
+
+    assert res.status_code == 201
