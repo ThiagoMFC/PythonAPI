@@ -1,5 +1,5 @@
 from app import schemas
-from .database import client, session
+#from .database import client, session
 import pytest
 #define order of testing 
 pytestmark = pytest.mark.order(1)    
