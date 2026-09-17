@@ -11,6 +11,7 @@ from app.config import settings
 from app.database import get_db, Base
 import pytest
 from app.oauth2 import create_access_token
+from app import models
 
 
 
@@ -73,3 +74,37 @@ def authorized_client(client, test_token):
         "Authorization": f"Bearer {test_token}"
     }
     return client
+
+#======================================================== POST CREATION FIXTURE ======================================================
+@pytest.fixture
+def test_posts(test_user, session):
+    post_data = [
+        {
+            "title": "first",
+            "content": "1st content",
+            "owner_id": test_user["id"]
+        },
+        {
+            "title": "second",
+            "content": "second content",
+            "owner_id": test_user["id"]
+        },
+        {
+            "title": "3rd",
+            "content": "3rd content",
+            "owner_id": test_user["id"]
+        },
+    ]
+
+    #convert dicts in list to post models
+    def create_post_model(post):
+        return models.Post(**post)
+    #create map of post models
+    post_map = map(create_post_model, post_data)
+    #convert map to list
+    posts = list(post_map)
+    #use list to add posts to db
+    session.add_all(posts)
+    session.commit()
+    posts = session.query(models.Post).all()
+    return posts
