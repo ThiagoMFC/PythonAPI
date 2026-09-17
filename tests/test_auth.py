@@ -24,3 +24,15 @@ def test_login_user(client, test_user):
     user_id = str(payload.get("user_id"))
     assert int(user_id) == test_user["id"]
 
+@pytest.mark.parametrize("email, password, status_code", [
+    (None, "badpassword", 422),
+    ("john@email.com", None, 422),
+    ("wrongemail@email.com", "pass123", 403),
+    ("email123@email.com", "badpassword", 403)
+])
+def test_incorrect_user(client, email, password, status_code):
+    res = client.post("/login", data={
+        "username": email,
+        "password": password})
+    assert res.status_code == status_code
+

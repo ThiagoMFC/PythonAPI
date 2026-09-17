@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from app.config import settings
 from app.database import get_db, Base
 import pytest
+from app.oauth2 import create_access_token
 
 
 
@@ -58,3 +59,17 @@ def test_user(client):
     temp_user = res.json()
     temp_user["password"] = user_data["password"]
     return temp_user
+
+#======================================================= TOKEN CREATION FIXTURE ===========================================================
+@pytest.fixture
+def test_token(test_user):
+    return create_access_token({"user_id": test_user["id"]})
+
+
+@pytest.fixture
+def authorized_client(client, test_token):
+    client.headers = {
+        **client.headers,
+        "Authorization": f"Bearer {test_token}"
+    }
+    return client
