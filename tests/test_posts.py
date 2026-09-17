@@ -20,6 +20,8 @@ def test_unauth_user_get_one_post(client, test_posts):
     post = schemas.PostVoteResponse(**res.json())
     #print(post)
     assert post.Post.id == test_posts[0].id
+    assert post.Post.title == test_posts[0].title
+    assert post.Post.content == test_posts[0].content
 
 def test_get_one_post(authorized_client, test_posts):
     res = authorized_client.get(f"/posts/{test_posts[0].id}")
@@ -28,6 +30,8 @@ def test_get_one_post(authorized_client, test_posts):
     post = schemas.PostVoteResponse(**res.json())
     #print(post)
     assert post.Post.id == test_posts[0].id
+    assert post.Post.title == test_posts[0].title
+    assert post.Post.content == test_posts[0].content
 
 def test_get_one_post_not_exist(authorized_client, test_posts):
     res = authorized_client.get(f"/posts/99999999999999")
