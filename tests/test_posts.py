@@ -74,3 +74,27 @@ def test_delete_other_user_post(authorized_client, test_user, test_posts):
     assert res.status_code == 403
     validate_delete = authorized_client.get("/posts/")
     assert len(validate_delete.json()) == len(test_posts)
+
+
+@pytest.mark.parametrize("title, content, published, status_code", [
+    ("some updated title", "some updated content", True, 200),
+    ("another updated title", "more updated content", False, 200),
+    (None, "more updates", True, 422),
+    ("updating", None, True, 422),
+])
+def test_update_post(authorized_client, test_user, test_posts, title, content, published, status_code):
+    res = authorized_client.put(f"/posts/{test_posts[0].id}", json={"title": title, "content": content, "published": published})
+    assert res.status_code == status_code
+    validate_update = authorized_client.get(f"/posts/{test_posts[0].id}")
+    if published is not False:
+        updated_post = schemas.PostVoteResponse(**validate_update.json())
+        if status_code != 422:
+            assert updated_post.Post.title == title
+            assert updated_post.Post.content == content
+            assert updated_post.Post.published == published
+        else:
+            assert updated_post.Post.title == test_posts[0].title
+            assert updated_post.Post.content == test_posts[0].content
+            assert updated_post.Post.published == test_posts[0].published
+    else:
+        assert validate_update.status_code == 404
