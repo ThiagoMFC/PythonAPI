@@ -98,3 +98,28 @@ def test_update_post(authorized_client, test_user, test_posts, title, content, p
             assert updated_post.Post.published == test_posts[0].published
     else:
         assert validate_update.status_code == 404
+
+
+@pytest.mark.parametrize("title, content, published, status_code", [
+    ("some updated title", "some updated content", True, 403),
+    ("another updated title", "more updated content", False, 403),
+    (None, "more updates", True, 422),
+    ("updating", None, True, 422),
+])
+def test_update_other_user_post(authorized_client, test_user, test_posts, title, content, published, status_code):
+    res = authorized_client.put(f"/posts/{test_posts[3].id}", json={"title": title, "content": content, "published": published})
+    assert res.status_code == status_code
+    validate_update = authorized_client.get(f"/posts/{test_posts[3].id}")
+    if published is True:
+        post = schemas.PostVoteResponse(**validate_update.json())
+        assert post.Post.title == test_posts[3].title
+        assert post.Post.content == test_posts[3].content
+        assert post.Post.published == test_posts[3].published
+
+def test_unauth_update_post(client, test_user, test_posts):
+    res = client.put(f"/posts/{test_posts[0].id}")
+    assert res.status_code == 401
+
+def test_update_post_not_exist(authorized_client, test_user, test_posts):
+    res = authorized_client.put("/posts/9999999999999", json={"title": "titleee", "content": "conteeent", "published": True})
+    assert res.status_code == 404

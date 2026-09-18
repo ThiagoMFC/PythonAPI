@@ -19,7 +19,7 @@ def vote(new_vote: schemas.Vote, db: Session = Depends(get_db), current_user: in
 
     if (new_vote.direction == 1):
         if found_vote:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user {current_user.id} has already votend on post {new_vote.post_id}")
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"user {current_user.id} has already voted on post {new_vote.post_id}")
 
         new_v = models.Vote(post_id = new_vote.post_id, user_id = current_user.id)
         # Add to db
